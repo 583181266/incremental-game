@@ -3,147 +3,144 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>像素菜园 · 种菜增量游戏</title>
+<title>像素菜园 · 点击种地与自动化农场</title>
 <style>
   :root{
-    --ink:#20242b; --paper:#f7ead1; --panel:#fff6e3; --line:#20242b;
-    --grass:#58a447; --grass-d:#3d7a30; --soil:#8a5a2b; --soil-d:#6f4520;
-    --gold:#e8a812; --sky:#7ec8e3; --red:#d94f3d; --purple:#7a4fd0;
+    --ink:#20242b; --paper:#f7ead1; --panel:#fff6e3;
+    --grass:#58a447; --grass-d:#3d7a30; --gold:#e8a812; --red:#d94f3d; --purple:#7a4fd0; --blue:#2e7fb8;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; border-radius:0 !important;}
   body{margin:0; font-family:"Courier New","PingFang SC","Microsoft YaHei",monospace; color:var(--ink);
     background:#79a83b repeating-conic-gradient(#00000010 0% 25%, transparent 0% 50%) 0 0/24px 24px;}
-  header{position:sticky; top:0; z-index:5; background:var(--sky); border-bottom:4px solid var(--ink); padding:12px 16px 10px;
-    box-shadow:0 4px 0 #00000030;}
-  .coins{font-size:29px; font-weight:900; color:#7a4d00; text-shadow:2px 2px 0 #ffffff90; line-height:1.1;}
-  .sub{color:#22303c; font-size:13px; font-weight:700; margin-top:3px;}
+  header{position:sticky; top:0; z-index:6; background:#7ec8e3; border-bottom:4px solid var(--ink); padding:10px 14px 8px; box-shadow:0 4px 0 #00000030;}
+  .coins{font-size:27px; font-weight:900; color:#7a4d00; text-shadow:2px 2px 0 #ffffff90; line-height:1.1;}
+  .sub{color:#22303c; font-size:12.5px; font-weight:700; margin-top:2px;}
   .sub b{color:#a33c00;}
-  .weather{display:inline-block; margin-top:7px; background:#fff; border:3px solid var(--ink); box-shadow:3px 3px 0 var(--ink); padding:3px 9px; font-size:13px; font-weight:900;}
-  main{max-width:640px; margin:0 auto; padding:14px 12px 44px;}
-  .plot{background:
-      repeating-linear-gradient(0deg, transparent 0 22px, #00000022 22px 24px),
-      repeating-linear-gradient(90deg, transparent 0 22px, #00000022 22px 24px),
-      linear-gradient(180deg, var(--soil), var(--soil-d));
-    border:4px solid var(--ink); box-shadow:6px 6px 0 #00000055; padding:18px 10px 14px; text-align:center;}
-  #plotBtn{width:168px; height:168px; font-size:84px; line-height:1; background:#a9743a; border:4px solid var(--ink);
-    box-shadow:0 6px 0 var(--ink); cursor:pointer; image-rendering:pixelated; transition:transform .05s;}
-  #plotBtn:active{transform:translateY(4px); box-shadow:0 2px 0 var(--ink);}
-  .plotHint{color:#ffe9bd; font-weight:900; font-size:14px; margin-top:12px; text-shadow:2px 2px 0 #00000070;}
-  .floatNum{position:fixed; z-index:9; font-weight:900; font-size:20px; color:#fff; text-shadow:2px 2px 0 var(--ink); pointer-events:none; animation:rise 1s steps(8) forwards;}
-  .floatVeg{position:fixed; z-index:9; font-size:30px; pointer-events:none; animation:rise 1.1s steps(10) forwards;}
-  @keyframes rise{from{opacity:1; transform:translateY(0)} to{opacity:0; transform:translateY(-76px)}}
-  .buyModes{display:flex; gap:8px; margin:14px 0 4px;}
-  .buyModes button{flex:1; padding:9px 0; border:3px solid var(--ink); background:var(--panel); color:var(--ink); font-size:15px; font-weight:900; cursor:pointer; box-shadow:3px 3px 0 var(--ink);}
-  .buyModes button.on{background:var(--gold); color:#fff; text-shadow:1px 1px 0 #00000060;}
-  h2{font-size:17px; margin:24px 0 10px; background:var(--panel); display:inline-block; border:3px solid var(--ink); box-shadow:3px 3px 0 var(--ink); padding:3px 10px;}
+  .weather{display:inline-block; margin-top:6px; background:#fff; border:3px solid var(--ink); box-shadow:3px 3px 0 var(--ink); padding:2px 8px; font-size:12.5px; font-weight:900;}
+  main{max-width:680px; margin:0 auto; padding:12px 12px 44px;}
+  #banner{width:100%; display:block; border:4px solid var(--ink); box-shadow:6px 6px 0 #00000055; image-rendering:pixelated; background:#7ec8e3;}
+  h2{font-size:16px; margin:22px 0 10px; background:var(--panel); display:inline-block; border:3px solid var(--ink); box-shadow:3px 3px 0 var(--ink); padding:3px 10px;}
+  /* 种子店 */
+  #seedBar{display:grid; grid-template-columns:repeat(4,1fr); gap:8px;}
+  .seedBtn{background:var(--panel); border:3px solid var(--ink); box-shadow:3px 3px 0 #00000040; padding:7px 4px 6px; cursor:pointer; text-align:center; font-family:inherit;}
+  .seedBtn canvas{width:40px; height:40px; image-rendering:pixelated; display:block; margin:0 auto 3px;}
+  .seedBtn .nm{font-weight:900; font-size:13px;}
+  .seedBtn .dt{font-size:11px; font-weight:700; color:#5a4632; line-height:1.5;}
+  .seedBtn.sel{background:#ffe9a8; outline:3px solid var(--gold); outline-offset:-6px;}
+  .seedBtn:disabled{opacity:.45; cursor:not-allowed;}
+  /* 田地 */
+  #field{display:grid; grid-template-columns:repeat(4,1fr); gap:9px;}
+  .plot{position:relative; background:#8a5a2b; border:3px solid var(--ink); box-shadow:4px 4px 0 #00000040; cursor:pointer; overflow:hidden;}
+  .plot canvas{width:100%; display:block; image-rendering:pixelated;}
+  .plot .bar{height:7px; background:#00000055; border-top:2px solid var(--ink);}
+  .plot .bar i{display:block; height:100%; background:var(--grass); width:0%;}
+  .plot.ripe .bar i{background:var(--gold);}
+  .plot.ripe{animation:bob 0.7s steps(2) infinite;}
+  @keyframes bob{0%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+  .plot .tag{position:absolute; left:0; right:0; top:34%; text-align:center; font-weight:900; font-size:13px; color:#fff; text-shadow:2px 2px 0 var(--ink); pointer-events:none;}
+  .plot.locked{cursor:pointer; filter:saturate(.4) brightness(.85);}
+  #harvestAll{margin-top:10px; width:100%; padding:11px; border:3px solid var(--ink); background:var(--gold); color:#fff; text-shadow:1px 1px 0 #00000060; font-size:15px; font-weight:900; cursor:pointer; box-shadow:4px 4px 0 var(--ink); font-family:inherit;}
+  #harvestAll:disabled{background:#b9b0a0; color:#6f6a5e; cursor:not-allowed;}
+  /* 卡片（自动化/升级） */
   .card{display:flex; align-items:center; gap:11px; background:var(--panel); border:3px solid var(--ink); box-shadow:4px 4px 0 #00000040; padding:10px 12px; margin-bottom:9px;}
-  .card .sprite{font-size:34px; width:46px; text-align:center; image-rendering:pixelated;}
+  .card canvas.ic{width:44px; height:44px; image-rendering:pixelated; flex:none;}
   .card .info{flex:1; min-width:0;}
   .card .name{font-weight:900; font-size:15px;}
   .card .desc{color:#5a4632; font-size:12px; font-weight:700; margin-top:2px; line-height:1.5;}
-  .badge{display:inline-block; background:var(--red); color:#fff; font-size:11px; padding:1px 6px; border:2px solid var(--ink); margin-left:6px; vertical-align:1px;}
-  .card .own{font-size:24px; font-weight:900; color:#8a6d1f; min-width:36px; text-align:center;}
-  .buyBtn{border:3px solid var(--ink); padding:8px 11px; font-size:14px; font-weight:900; background:var(--grass); color:#fff; text-shadow:1px 1px 0 #00000055; cursor:pointer; white-space:nowrap; box-shadow:3px 3px 0 var(--ink);}
+  .card .lv{font-size:21px; font-weight:900; color:#8a6d1f; min-width:44px; text-align:center;}
+  .buyBtn{border:3px solid var(--ink); padding:8px 11px; font-size:14px; font-weight:900; background:var(--grass); color:#fff; text-shadow:1px 1px 0 #00000055; cursor:pointer; white-space:nowrap; box-shadow:3px 3px 0 var(--ink); font-family:inherit;}
   .buyBtn:active{transform:translate(2px,2px); box-shadow:1px 1px 0 var(--ink);}
-  .buyBtn:disabled{background:#b9b0a0; color:#6f6a5e; cursor:not-allowed; box-shadow:3px 3px 0 #77705f;}
+  .buyBtn:disabled{background:#b9b0a0; color:#6f6a5e; cursor:not-allowed;}
   .buyBtn small{display:block; font-weight:700; font-size:11px; opacity:.9;}
-  .upBtn{background:#2e7fb8;}
+  .upBtn{background:var(--blue);}
   .fest{background:linear-gradient(135deg,#ffe9a8,#ffd34d); border:4px solid var(--ink); box-shadow:5px 5px 0 #00000040; padding:15px;}
   .fest .big{font-size:19px; font-weight:900; color:#7a2d8a;}
-  #festBtn{margin-top:10px; width:100%; padding:12px; border:3px solid var(--ink); background:var(--purple); color:#fff; font-size:16px; font-weight:900; cursor:pointer; box-shadow:4px 4px 0 var(--ink); text-shadow:1px 1px 0 #00000055;}
+  #festBtn{margin-top:10px; width:100%; padding:12px; border:3px solid var(--ink); background:var(--purple); color:#fff; font-size:16px; font-weight:900; cursor:pointer; box-shadow:4px 4px 0 var(--ink); font-family:inherit;}
   #festBtn:disabled{background:#b9b0a0; color:#6f6a5e; cursor:not-allowed;}
   .stats{color:#3c3226; font-size:13px; font-weight:700; line-height:1.9; background:var(--panel); border:3px solid var(--ink); padding:10px 13px; box-shadow:4px 4px 0 #00000040;}
   .stats b{color:#a33c00;}
-  .danger{background:#fff; border:3px solid var(--red); color:var(--red); font-weight:900; padding:8px 14px; cursor:pointer; margin-top:14px;}
-  .guide{background:var(--panel); border:3px solid var(--ink); box-shadow:4px 4px 0 #00000040; padding:6px 14px; font-size:13px; font-weight:700; line-height:2;}
+  .danger{background:#fff; border:3px solid var(--red); color:var(--red); font-weight:900; padding:8px 14px; cursor:pointer; margin-top:14px; font-family:inherit;}
+  .floatNum{position:fixed; z-index:9; font-weight:900; font-size:19px; color:#fff; text-shadow:2px 2px 0 var(--ink); pointer-events:none; animation:rise 1s steps(8) forwards;}
+  @keyframes rise{from{opacity:1; transform:translateY(0)} to{opacity:0; transform:translateY(-70px)}}
+  #toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%); background:#20242b; color:#fff; font-weight:900; font-size:14px; padding:9px 18px; border:3px solid #fff; box-shadow:4px 4px 0 #00000060; opacity:0; pointer-events:none; transition:opacity .2s; z-index:30;}
   #modal{position:fixed; inset:0; background:rgba(20,16,8,.66); display:none; align-items:center; justify-content:center; z-index:20;}
   #modal .box{background:var(--paper); border:4px solid var(--ink); box-shadow:6px 6px 0 #000; padding:24px; max-width:320px; text-align:center;}
-  #modal button{margin-top:14px; padding:10px 26px; border:3px solid var(--ink); background:var(--grass); color:#fff; font-size:15px; font-weight:900; cursor:pointer; box-shadow:3px 3px 0 var(--ink);}
+  #modal button{margin-top:14px; padding:10px 26px; border:3px solid var(--ink); background:var(--grass); color:#fff; font-size:15px; font-weight:900; cursor:pointer; box-shadow:3px 3px 0 var(--ink); font-family:inherit;}
   .hidden{display:none !important;}
 </style>
 </head>
 <body>
 <header>
   <div class="coins">🪙 <span id="coins">0</span> 金币</div>
-  <div class="sub">每秒收获 <b id="cps">0</b> · 每次采摘 <b id="clickVal">1</b> · 金种子 <b id="seeds">0</b>（产量 +<span id="seedBonus">0</span>%）</div>
+  <div class="sub">金种子 <b id="seeds">0</b>（卖价 +<span id="seedBonus">0</span>%）· 自动化速率 <b id="autoRate">手动模式</b></div>
   <div class="weather" id="weather"></div>
 </header>
 <main>
-  <div class="plot">
-    <button id="plotBtn" title="采摘">🌱</button>
-    <div class="plotHint">点这块地，亲手采摘赚钱！</div>
-  </div>
+  <canvas id="banner" width="160" height="40"></canvas>
 
-  <div class="buyModes" id="buyModes">
-    <button data-n="1" class="on">×1</button>
-    <button data-n="10">×10</button>
-    <button data-n="100">×100</button>
-    <button data-n="max">买满</button>
-  </div>
+  <h2>🌰 种子店（选好种子，点空地播下）</h2>
+  <div id="seedBar"></div>
 
-  <h2>🌻 我的菜园</h2>
-  <div id="crops"></div>
+  <h2>🌻 我的田园（点地：播种 / 浇水催熟 / 收获）</h2>
+  <div id="field"></div>
+  <button id="harvestAll">🧺 一键收获所有成熟作物</button>
+
+  <h2>🤖 自动化农场</h2>
+  <div id="autos"></div>
 
   <h2>🧰 农具与技术</h2>
   <div id="upgrades"></div>
-  <div id="noUpgrades" class="sub">暂无新技术（多种菜、多赚钱就能解锁）</div>
+  <div id="noUpgrades" class="sub">暂无新技术（继续赚钱就能解锁更多）</div>
 
   <h2>🎪 丰收祭</h2>
   <div class="fest">
     <div class="big">可换金种子：<span id="pendingSeeds">0</span> 颗</div>
-    <div class="sub" style="margin-top:6px">把这一季的收成献给丰收祭，换回金种子：金币和菜园会清空重来，但每颗金种子永久 +5% 产量。这一季赚得越多，换到的种子越多。</div>
+    <div class="sub" style="margin-top:6px">献上这一季的收成换金种子：金币、田地、机器和技术会清空重来，但每颗金种子永久 +5% 卖价。本季赚得越多，换得越多。</div>
     <button id="festBtn">开启丰收祭</button>
   </div>
-
-  <h2>📖 菜园图鉴</h2>
-  <div class="guide" id="guide"></div>
 
   <h2>📊 农场账本</h2>
   <div class="stats" id="stats"></div>
   <button class="danger" id="wipeBtn">烧掉重种（删除存档）</button>
 </main>
 
+<div id="toast"></div>
 <div id="modal"><div class="box">
   <div style="font-size:18px;font-weight:900">🌅 天亮了！</div>
-  <div class="sub" style="margin-top:8px">你不在的 <span id="offTime"></span> 里，菜园自己长势喜人，收获了</div>
+  <div class="sub" style="margin-top:8px" id="offText"></div>
   <div style="font-size:24px;font-weight:900;color:#a33c00;margin-top:6px">🪙 <span id="offGain"></span> 金币</div>
   <button id="offOk">收下</button>
 </div></div>
 
 <script>
 "use strict";
-/* ===== 作物表：8 种作物，价格 ×1.15 指数增长 ===== */
+/* ================= 数据 ================= */
 const CROPS = [
-  { id:"carrot",  name:"胡萝卜田", icon:"🥕", baseCost:15,       baseCps:0.1,  desc:"兔子最爱，新农人的第一课，拔出来还带泥香。" },
-  { id:"cabbage", name:"卷心菜地", icon:"🥬", baseCost:100,      baseCps:1,    desc:"一层裹一层，包住了整个冬天的踏实。" },
-  { id:"tomato",  name:"番茄架",   icon:"🍅", baseCost:1100,     baseCps:8,    desc:"红透了才摘，酸甜的价钱最好。" },
-  { id:"corn",    name:"玉米田",   icon:"🌽", baseCost:12000,    baseCps:47,   desc:"一人多高，风一过哗哗响，像在数钱。" },
-  { id:"pumpkin", name:"南瓜园",   icon:"🎃", baseCost:130000,   baseCps:260,  desc:"一个顶十个，万圣节前最抢手。" },
-  { id:"melon",   name:"西瓜棚",   icon:"🍉", baseCost:1400000,  baseCps:1400, desc:"敲一敲，脆响的就是好瓜，夏天的硬通货。" },
-  { id:"berry",   name:"草莓大棚", icon:"🍓", baseCost:20000000, baseCps:7800, desc:"娇贵但值钱，城里甜品店排队来收。" },
-  { id:"wheat",   name:"黄金麦田", icon:"🌾", baseCost:330000000,baseCps:44000,desc:"风吹麦浪金满地，菜园的终极浪漫。" },
+  { id:"carrot",  name:"胡萝卜", seed:5,      grow:3,    sell:9,       desc:"3 秒速熟，新手练手" },
+  { id:"cabbage", name:"卷心菜", seed:25,     grow:10,   sell:55,      desc:"10 秒一茬，稳稳当当" },
+  { id:"tomato",  name:"番茄",   seed:120,    grow:30,   sell:300,     desc:"30 秒红透，酸甜好价" },
+  { id:"corn",    name:"玉米",   seed:600,    grow:60,   sell:1700,    desc:"1 分钟金黄，风过哗哗响" },
+  { id:"pumpkin", name:"南瓜",   seed:3500,   grow:150,  sell:11000,   desc:"2 分半一个，个头压秤" },
+  { id:"melon",   name:"西瓜",   seed:20000,  grow:300,  sell:72000,   desc:"5 分钟脆响，夏天硬通货" },
+  { id:"berry",   name:"草莓",   seed:120000, grow:600,  sell:480000,  desc:"10 分钟娇贵，甜品店抢收" },
+  { id:"wheat",   name:"黄金麦", seed:800000, grow:1200, sell:3600000, desc:"20 分钟麦浪，终极浪漫" },
 ];
-const COST_GROWTH = 1.15;
-
-/* 升级：click 采摘强化 / crop 单种作物翻倍 / global 全园翻倍 */
+const CROP = {}; CROPS.forEach(c=>CROP[c.id]=c);
+const PLOT_COSTS = [0,0,0,0, 200, 800, 3000, 12000, 50000, 200000, 800000, 3000000];
+const AUTOS = [
+  { id:"planter",   name:"自动播种机", base:300,  mult:3.2, max:8, desc:"每级每秒自动在 1 块空地播下当前种子（需付种子钱）" },
+  { id:"harvester", name:"自动收割机", base:300,  mult:3.2, max:8, desc:"每级每秒自动收割 1 块成熟作物并卖出" },
+  { id:"sprinkler", name:"自动洒水器", base:1000, mult:3.5, max:8, desc:"每级让所有作物生长速度 +30%" },
+];
 const UPGRADES = [
-  { id:"hoe1", name:"精铁锄头",   desc:"采摘收益 ×2",         cost:100,       type:"click", mult:2, cond:s=>true },
-  { id:"hoe2", name:"顺手镰刀",   desc:"采摘收益 ×2",         cost:5000,      type:"click", mult:2, cond:s=>s.stats.totalClicks>=200 },
-  { id:"hoe3", name:"金柄锄头",   desc:"采摘收益 ×2",         cost:500000,    type:"click", mult:2, cond:s=>s.stats.totalClicks>=800 },
-  { id:"u_carrot",  name:"有机肥",     desc:"胡萝卜田产量 ×2", cost:1000,      type:"crop", target:"carrot",  mult:2, cond:s=>s.owned.carrot>=10 },
-  { id:"u_cabbage", name:"进口菜种",   desc:"卷心菜地产量 ×2", cost:8000,      type:"crop", target:"cabbage", mult:2, cond:s=>s.owned.cabbage>=10 },
-  { id:"u_tomato",  name:"番茄支架",   desc:"番茄架产量 ×2",   cost:60000,     type:"crop", target:"tomato",  mult:2, cond:s=>s.owned.tomato>=10 },
-  { id:"u_corn",    name:"密植技术",   desc:"玉米田产量 ×2",   cost:600000,    type:"crop", target:"corn",    mult:2, cond:s=>s.owned.corn>=10 },
-  { id:"u_pumpkin", name:"嫁接南瓜",   desc:"南瓜园产量 ×2",   cost:6000000,   type:"crop", target:"pumpkin", mult:2, cond:s=>s.owned.pumpkin>=10 },
-  { id:"u_melon",   name:"滴灌系统",   desc:"西瓜棚产量 ×2",   cost:60000000,  type:"crop", target:"melon",   mult:2, cond:s=>s.owned.melon>=10 },
-  { id:"u_berry",   name:"恒温大棚",   desc:"草莓大棚产量 ×2", cost:800000000, type:"crop", target:"berry",   mult:2, cond:s=>s.owned.berry>=10 },
-  { id:"u_wheat",   name:"联合收割机", desc:"黄金麦田产量 ×2", cost:9000000000,type:"crop", target:"wheat",   mult:2, cond:s=>s.owned.wheat>=10 },
-  { id:"g1", name:"菜市场摊位", desc:"全园产量 ×2", cost:200000,     type:"global", mult:2, cond:s=>s.stats.runEarned>=100000 },
-  { id:"g2", name:"农家乐招牌", desc:"全园产量 ×2", cost:50000000,   type:"global", mult:2, cond:s=>s.stats.runEarned>=20000000 },
-  { id:"g3", name:"出口订单",   desc:"全园产量 ×2", cost:2000000000, type:"global", mult:2, cond:s=>s.stats.runEarned>=1000000000 },
+  { id:"can",       name:"精钢水壶",   cost:500,     desc:"浇水催熟效果 ×3（每次点击 +18% 进度）", cond:s=>s.stats.totalClicks>=30 },
+  { id:"compost",   name:"堆肥技术",   cost:800,     desc:"所有作物生长速度 ×1.5",                 cond:s=>s.stats.totalEarned>=500 },
+  { id:"gloves",    name:"丰收手套",   cost:1500,    desc:"所有作物卖价 +50%",                      cond:s=>s.stats.totalEarned>=1000 },
+  { id:"fertilizer",name:"高效化肥",   cost:25000,   desc:"所有作物生长速度 ×1.5",                 cond:s=>s.stats.totalEarned>=15000 },
+  { id:"basket",    name:"精编竹篮",   cost:40000,   desc:"所有作物卖价 +50%",                      cond:s=>s.stats.totalEarned>=25000 },
+  { id:"magicdust", name:"星尘肥料",   cost:600000,  desc:"所有作物生长速度 ×1.5",                 cond:s=>s.stats.totalEarned>=400000 },
+  { id:"truck",     name:"农用小货车", cost:1200000, desc:"所有作物卖价 +50%",                      cond:s=>s.stats.totalEarned>=800000 },
 ];
-
-/* 每日天气：按日期轮换一种作物大丰收 +50% */
 const WEATHERS = [
   { name:"晴空万里", icon:"☀️" }, { name:"春雨绵绵", icon:"🌧️" },
   { name:"微风拂面", icon:"🍃" }, { name:"暖阳高照", icon:"🌤️" },
@@ -155,69 +152,71 @@ function weatherCropIdx(){
   const start = new Date(now.getFullYear(), 0, 0);
   return Math.floor((now - start) / 86400000) % CROPS.length;
 }
-
-const SAVE_KEY = "pixel-farm-v1";
+const SAVE_KEY = "pixel-farm-v2";
 const OFFLINE_CAP_SEC = 8 * 3600;
 
+/* ================= 状态 ================= */
 function freshState(){
-  const owned = {}; CROPS.forEach(c=>owned[c.id]=0);
-  return { v:1, coins:0, seeds:0, owned, upgrades:[],
-    stats:{ totalEarned:0, runEarned:0, totalClicks:0, fests:0, playSec:0 }, lastTime:Date.now() };
+  return { v:2, coins:20, seeds:0, unlocked:4, sel:"carrot",
+    plots: Array.from({length:12}, ()=>({ crop:null, t0:0, bonus:0 })),
+    autos:{ planter:0, harvester:0, sprinkler:0 }, upgrades:[],
+    stats:{ totalEarned:0, runEarned:0, totalClicks:0, harvests:0, fests:0, playSec:0 },
+    lastTime:Date.now() };
 }
 let S = freshState();
-
 function save(){ S.lastTime = Date.now(); try{ localStorage.setItem(SAVE_KEY, JSON.stringify(S)); }catch(e){} }
 function load(){
   try{
     const raw = localStorage.getItem(SAVE_KEY);
     if(!raw) return 0;
     const d = JSON.parse(raw);
-    if(!d || d.v !== 1) return 0;
+    if(!d || d.v !== 2) return 0;
     S = Object.assign(freshState(), d);
-    S.owned = Object.assign(freshState().owned, d.owned||{});
+    S.autos = Object.assign(freshState().autos, d.autos||{});
     S.stats = Object.assign(freshState().stats, d.stats||{});
+    if(!Array.isArray(S.plots) || S.plots.length !== 12) S.plots = freshState().plots;
+    /* 离线：作物按真实时间继续长（时间戳结算）；有全套自动化时按速率补发收入，上限 8 小时 */
     const away = Math.min((Date.now() - (d.lastTime||Date.now()))/1000, OFFLINE_CAP_SEC);
-    const gain = cps() * away;
-    if(away > 60 && gain > 0){
-      S.coins += gain; S.stats.totalEarned += gain; S.stats.runEarned += gain;
-      return { away, gain };
+    let gain = 0;
+    if(away > 60 && S.autos.planter > 0 && S.autos.harvester > 0){
+      gain = autoRate() * away;
+      if(gain > 0){ S.coins += gain; S.stats.totalEarned += gain; S.stats.runEarned += gain; }
     }
+    if(away > 60) return { away, gain };
   }catch(e){}
   return 0;
 }
 
-/* ===== 计算 ===== */
-function cropMult(id){
-  let m = 1;
-  UPGRADES.forEach(u=>{ if(u.type==="crop" && u.target===id && S.upgrades.includes(u.id)) m *= u.mult; });
-  if(CROPS[weatherCropIdx()].id === id) m *= 1.5;
+/* ================= 计算 ================= */
+function growthMult(){
+  let m = 1 + S.autos.sprinkler * 0.3;
+  if(S.upgrades.includes("compost")) m *= 1.5;
+  if(S.upgrades.includes("fertilizer")) m *= 1.5;
+  if(S.upgrades.includes("magicdust")) m *= 1.5;
   return m;
 }
-function globalMult(){
+function sellMult(cropId){
   let m = 1 + S.seeds * 0.05;
-  UPGRADES.forEach(u=>{ if(u.type==="global" && S.upgrades.includes(u.id)) m *= u.mult; });
+  if(S.upgrades.includes("gloves")) m *= 1.5;
+  if(S.upgrades.includes("basket")) m *= 1.5;
+  if(S.upgrades.includes("truck")) m *= 1.5;
+  if(cropId && CROPS[weatherCropIdx()].id === cropId) m *= 1.5;
   return m;
 }
-function cps(){
-  let sum = 0;
-  CROPS.forEach(c=>{ sum += S.owned[c.id] * c.baseCps * cropMult(c.id); });
-  return sum * globalMult();
+function progress(p){
+  if(!p.crop) return 0;
+  const c = CROP[p.crop];
+  return ((Date.now() - p.t0) / 1000 * growthMult() + p.bonus) / c.grow;
 }
-function clickValue(){
-  let m = 1;
-  UPGRADES.forEach(u=>{ if(u.type==="click" && S.upgrades.includes(u.id)) m *= u.mult; });
-  return m * globalMult();
-}
-function unitCost(c){ return c.baseCost * Math.pow(COST_GROWTH, S.owned[c.id]); }
-function bulkCost(c, n){ const u = unitCost(c); return u * (Math.pow(COST_GROWTH, n) - 1) / (COST_GROWTH - 1); }
-function maxAffordable(c){
-  const u = unitCost(c);
-  if(S.coins < u) return 0;
-  return Math.max(0, Math.floor(Math.log((S.coins * (COST_GROWTH - 1)) / u + 1) / Math.log(COST_GROWTH)));
+function isRipe(p){ return p.crop && progress(p) >= 1; }
+function sellValue(p){ return CROP[p.crop].sell * sellMult(p.crop); }
+function autoRate(){
+  if(S.autos.planter < 1 || S.autos.harvester < 1) return 0;
+  const c = CROP[S.sel] || CROPS[0];
+  const lanes = Math.min(S.autos.planter, S.autos.harvester, S.unlocked);
+  return lanes * (c.sell * sellMult(c.id)) / (c.grow / growthMult());
 }
 function pendingSeeds(){ return Math.floor(150 * Math.sqrt(S.stats.runEarned / 1e6)); }
-
-/* ===== 格式化 ===== */
 function fmt(n){
   if(n < 1000) return Math.floor(n).toString();
   const units = ["K","M","B","T","Qa","Qi","Sx","Sp"];
@@ -227,60 +226,206 @@ function fmt(n){
 }
 function fmtTime(sec){
   sec = Math.floor(sec);
+  if(sec < 60) return sec + " 秒";
   if(sec < 3600) return Math.floor(sec/60) + " 分钟";
   return Math.floor(sec/3600) + " 小时 " + Math.floor(sec%3600/60) + " 分钟";
 }
+/* ================= 像素画：程序绘制的像素精灵 ================= */
+function R(ctx,x,y,w,h,c){ ctx.fillStyle = c; ctx.fillRect(x|0, y|0, Math.ceil(w), Math.ceil(h)); }
+function speckle(seed){ let s = seed * 2654435761 % 4294967296; return ()=>{ s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }; }
 
-/* ===== 渲染 ===== */
+function drawSoil(ctx, seedIdx){
+  const rnd = speckle(seedIdx + 3);
+  for(let y=0; y<16; y++) R(ctx, 0, y, 16, 1, y < 2 ? "#a9743a" : (y % 3 === 2 ? "#7c4f22" : "#8a5a2b"));
+  for(let i=0; i<14; i++){ const x = (rnd()*15)|0, y = 2 + ((rnd()*13)|0); R(ctx, x, y, 1, 1, rnd() > .5 ? "#6f4520" : "#9c6b33"); }
+  R(ctx, 0, 0, 16, 1, "#b9834a");
+}
+function drawSeedStage(ctx){
+  R(ctx,7,11,1,1,"#3a2a16"); R(ctx,9,12,1,1,"#3a2a16"); R(ctx,8,13,1,1,"#3a2a16");
+  R(ctx,7,10,2,1,"#d9c9a3");
+}
+function drawSprout(ctx){
+  R(ctx,8,8,1,4,"#3d7a30");
+  R(ctx,6,7,2,1,"#58a447"); R(ctx,9,6,2,1,"#58a447"); R(ctx,7,6,1,1,"#6fbf57"); R(ctx,9,8,1,1,"#6fbf57");
+}
+function drawBush(ctx, tint){
+  const g1 = tint || "#58a447", g2 = "#3d7a30", g3 = "#6fbf57";
+  R(ctx,5,7,6,5,g2); R(ctx,4,8,8,3,g1); R(ctx,6,6,4,2,g3); R(ctx,7,11,2,2,g2);
+  R(ctx,5,8,1,1,g3); R(ctx,10,9,1,1,g3); R(ctx,7,7,1,1,"#86d973");
+}
+function drawCrop(ctx, id, seedIdx){
+  drawSoil(ctx, seedIdx);
+  switch(id){
+    case "carrot":
+      R(ctx,7,3,1,4,"#3d7a30"); R(ctx,5,4,2,1,"#58a447"); R(ctx,9,4,2,1,"#58a447"); R(ctx,8,2,1,2,"#6fbf57");
+      R(ctx,6,8,4,2,"#e07b28"); R(ctx,7,10,2,2,"#e07b28"); R(ctx,7,12,1,1,"#c9661d"); R(ctx,6,8,4,1,"#f09540");
+      break;
+    case "cabbage":
+      R(ctx,4,7,8,5,"#3d7a30"); R(ctx,5,5,6,6,"#58a447"); R(ctx,6,6,4,4,"#7cc463"); R(ctx,7,7,2,2,"#a5dd8f");
+      R(ctx,5,6,1,4,"#4c8f3a"); R(ctx,10,6,1,4,"#4c8f3a");
+      break;
+    case "tomato":
+      drawBush(ctx);
+      R(ctx,5,8,2,2,"#d93636"); R(ctx,9,7,2,2,"#d93636"); R(ctx,7,10,2,2,"#e04848"); R(ctx,5,8,1,1,"#ff7a6b"); R(ctx,9,7,1,1,"#ff7a6b");
+      break;
+    case "corn":
+      R(ctx,7,2,2,11,"#3d7a30"); R(ctx,4,9,3,1,"#58a447"); R(ctx,9,8,3,1,"#58a447"); R(ctx,5,5,2,1,"#58a447");
+      R(ctx,6,3,4,6,"#f2c230"); R(ctx,6,3,4,1,"#ffd95e"); R(ctx,7,4,1,4,"#d9a41c"); R(ctx,8,5,1,3,"#d9a41c");
+      break;
+    case "pumpkin":
+      R(ctx,7,4,2,2,"#6f4520");
+      R(ctx,3,7,10,5,"#e07b28"); R(ctx,4,6,8,6,"#e07b28"); R(ctx,5,6,1,6,"#c9661d"); R(ctx,10,6,1,6,"#c9661d"); R(ctx,7,6,2,6,"#f09540");
+      break;
+    case "melon":
+      R(ctx,3,8,10,4,"#3d7a30"); R(ctx,4,7,8,5,"#4c9e42"); R(ctx,5,7,1,5,"#2f6e26"); R(ctx,8,7,1,5,"#2f6e26"); R(ctx,11,7,1,5,"#2f6e26");
+      R(ctx,5,7,6,1,"#6fbf57"); R(ctx,7,3,2,2,"#58a447");
+      break;
+    case "berry":
+      R(ctx,5,4,6,2,"#3d7a30"); R(ctx,4,5,8,2,"#58a447");
+      R(ctx,5,7,6,3,"#d93636"); R(ctx,6,10,4,2,"#d93636"); R(ctx,7,12,2,1,"#c22e2e");
+      R(ctx,6,8,1,1,"#ffe9ec"); R(ctx,9,8,1,1,"#ffe9ec"); R(ctx,7,10,1,1,"#ffe9ec"); R(ctx,5,7,1,1,"#ff8a80");
+      break;
+    case "wheat":
+      [5,8,11].forEach(x=>{
+        R(ctx,x,5,1,8,"#d9a41c");
+        R(ctx,x-1,3,1,2,"#f2c230"); R(ctx,x,2,1,3,"#ffd95e"); R(ctx,x+1,3,1,2,"#f2c230"); R(ctx,x,6,1,1,"#ffd95e"); R(ctx,x,9,1,1,"#ffd95e");
+      });
+      R(ctx,3,12,10,1,"#b9834a");
+      break;
+  }
+}
+function drawPlotCanvas(cv, i){
+  const ctx = cv.getContext("2d");
+  const p = S.plots[i];
+  drawSoil(ctx, i + 1);
+  if(!p.crop) return;
+  const pr = progress(p);
+  if(pr >= 1){ drawCrop(ctx, p.crop, i + 1); if((Date.now() >> 8) % 2 === 0){ R(ctx,2,2,1,1,"#fff6b0"); R(ctx,13,4,1,1,"#fff6b0"); R(ctx,11,1,1,1,"#ffffff"); } }
+  else if(pr < 0.25) drawSeedStage(ctx);
+  else if(pr < 0.55) drawSprout(ctx);
+  else drawBush(ctx);
+}
+function drawAutoIcon(cv, id){
+  const ctx = cv.getContext("2d");
+  ctx.clearRect(0,0,16,16);
+  if(id === "planter"){
+    R(ctx,2,9,9,4,"#8a5a2b"); R(ctx,2,9,9,1,"#a9743a"); R(ctx,3,13,2,2,"#20242b"); R(ctx,8,13,2,2,"#20242b");
+    R(ctx,6,4,1,5,"#3d7a30"); R(ctx,4,5,2,1,"#58a447"); R(ctx,7,3,2,1,"#58a447"); R(ctx,11,6,2,2,"#d9c9a3");
+  } else if(id === "harvester"){
+    R(ctx,2,6,10,6,"#e07b28"); R(ctx,2,6,10,1,"#f09540"); R(ctx,9,3,3,3,"#7ec8e3"); R(ctx,3,12,3,3,"#20242b"); R(ctx,10,12,3,3,"#20242b");
+    R(ctx,12,8,2,1,"#b9b0a0"); R(ctx,13,9,1,3,"#8f887a");
+  } else {
+    R(ctx,7,1,2,6,"#2e7fb8"); R(ctx,3,7,10,2,"#2e7fb8");
+    R(ctx,3,11,1,2,"#7ec8e3"); R(ctx,6,12,1,2,"#7ec8e3"); R(ctx,9,11,1,2,"#7ec8e3"); R(ctx,12,12,1,2,"#7ec8e3");
+    R(ctx,2,14,12,1,"#58a447");
+  }
+}
+function drawBanner(){
+  const cv = document.getElementById("banner"), ctx = cv.getContext("2d");
+  for(let y=0; y<26; y++) R(ctx, 0, y, 160, 1, y < 8 ? "#6fc3e7" : y < 16 ? "#7ec8e3" : "#9fd8ef");
+  R(ctx,138,3,10,10,"#ffd83d"); R(ctx,136,5,14,6,"#ffd83d"); R(ctx,140,1,6,14,"#ffd83d");
+  R(ctx,14,5,22,4,"#ffffff"); R(ctx,20,3,12,3,"#ffffff"); R(ctx,96,8,18,3,"#ffffff"); R(ctx,101,6,9,3,"#ffffff"); R(ctx,52,4,14,3,"#ffffff");
+  R(ctx,0,22,70,5,"#58a447"); R(ctx,60,20,100,7,"#4c9e42"); R(ctx,0,25,160,2,"#58a447");
+  for(let x=0; x<160; x+=8) R(ctx, x, 30, 2, 5, "#6f4520");
+  R(ctx,0,29,160,1,"#8a5a2b"); R(ctx,0,35,160,5,"#7c4f22");
+  for(let x=4; x<160; x+=16){ R(ctx, x, 36, 6, 1, "#96682f"); R(ctx, x+2, 38, 5, 1, "#96682f"); }
+  R(ctx,8,14,16,10,"#f7ead1"); R(ctx,6,11,20,3,"#d94f3d"); R(ctx,9,10,14,2,"#d94f3d"); R(ctx,14,18,4,6,"#6f4520"); R(ctx,10,16,3,3,"#ffd83d");
+  R(ctx,30,15,3,9,"#6f4520"); R(ctx,26,7,11,8,"#3d7a30"); R(ctx,28,5,7,4,"#58a447"); R(ctx,29,9,1,1,"#d93636"); R(ctx,33,11,1,1,"#d93636"); R(ctx,31,13,1,1,"#d93636");
+}
+
+/* ================= 界面构建 ================= */
 const $ = id => document.getElementById(id);
-let buyN = 1;
-const cropEls = {}, upEls = {};
-
+const plotEls = [], seedEls = {}, autoEls = {}, upEls = {};
+let toastTimer = 0;
+function toast(msg){
+  const t = $("toast"); t.textContent = msg; t.style.opacity = 1;
+  clearTimeout(toastTimer); toastTimer = setTimeout(()=>t.style.opacity = 0, 1600);
+}
 function buildUI(){
-  const wrap = $("crops");
+  drawBanner();
+  const sb = $("seedBar");
   CROPS.forEach(c=>{
+    const b = document.createElement("button");
+    b.className = "seedBtn"; b.id = "seed-" + c.id;
+    b.innerHTML = `<canvas width="16" height="16"></canvas><div class="nm">${c.name}</div>
+      <div class="dt">种子 ${fmt(c.seed)} · 卖 ${fmt(c.sell)}<br>${c.grow < 60 ? c.grow + " 秒" : (c.grow/60) + " 分钟"} · ${c.desc}</div>`;
+    sb.appendChild(b);
+    drawCrop(b.querySelector("canvas").getContext("2d"), c.id, 5);
+    seedEls[c.id] = b;
+    b.addEventListener("click", ()=>{ S.sel = c.id; render(); });
+  });
+  const fw = $("field");
+  for(let i=0; i<12; i++){
+    const d = document.createElement("div");
+    d.className = "plot";
+    d.innerHTML = `<canvas width="16" height="16"></canvas><div class="tag hidden"></div><div class="bar"><i></i></div>`;
+    fw.appendChild(d);
+    plotEls.push({ root:d, cv:d.querySelector("canvas"), tag:d.querySelector(".tag"), bar:d.querySelector(".bar i"), stage:-1 });
+    d.addEventListener("click", ()=>plotClick(i));
+  }
+  const aw = $("autos");
+  AUTOS.forEach(a=>{
     const el = document.createElement("div"); el.className = "card";
-    el.innerHTML = `<div class="sprite">${c.icon}</div>
-      <div class="info"><div class="name">${c.name}<span class="badge hidden">大丰收 +50%</span></div>
-      <div class="desc">${c.desc}<br>每块地每秒 +<span class="pcps"></span> 金币</div></div>
-      <div class="own">0</div>
-      <button class="buyBtn">买地<small></small></button>`;
-    wrap.appendChild(el);
-    cropEls[c.id] = { root:el, own:el.querySelector(".own"), btn:el.querySelector(".buyBtn"), pcps:el.querySelector(".pcps"), badge:el.querySelector(".badge") };
-    el.querySelector(".buyBtn").addEventListener("click", ()=>buyCrop(c));
+    el.innerHTML = `<canvas class="ic" width="16" height="16"></canvas>
+      <div class="info"><div class="name">${a.name}</div><div class="desc">${a.desc}</div></div>
+      <div class="lv">Lv.0</div>
+      <button class="buyBtn">购买<small></small></button>`;
+    aw.appendChild(el);
+    drawAutoIcon(el.querySelector("canvas"), a.id);
+    autoEls[a.id] = { lv:el.querySelector(".lv"), btn:el.querySelector(".buyBtn") };
+    el.querySelector(".buyBtn").addEventListener("click", ()=>buyAuto(a));
   });
   const uw = $("upgrades");
   UPGRADES.forEach(u=>{
     const el = document.createElement("div"); el.className = "card hidden";
-    el.innerHTML = `<div class="sprite">🧰</div>
-      <div class="info"><div class="name">${u.name}</div><div class="desc">${u.desc}</div></div>
+    el.innerHTML = `<div class="info"><div class="name">🧰 ${u.name}</div><div class="desc">${u.desc}</div></div>
       <button class="buyBtn upBtn">学习<small>${fmt(u.cost)} 金币</small></button>`;
     uw.appendChild(el);
     upEls[u.id] = el;
     el.querySelector(".buyBtn").addEventListener("click", ()=>buyUpgrade(u));
   });
-  $("guide").innerHTML = CROPS.map(c=>`${c.icon} <b>${c.name}</b>：${c.desc}`).join("<br>");
   const w = WEATHERS[weatherCropIdx()], wc = CROPS[weatherCropIdx()];
-  $("weather").textContent = `${w.icon} 今日${w.name} · ${wc.icon} ${wc.name}大丰收 +50%`;
+  $("weather").textContent = `${w.icon} 今日${w.name} · ${wc.name}卖价 +50%`;
 }
 
+/* ================= 渲染 ================= */
+function stageOf(p){
+  if(!p.crop) return 0;
+  const pr = progress(p);
+  return pr >= 1 ? 4 : pr < 0.25 ? 1 : pr < 0.55 ? 2 : 3;
+}
 function render(){
   $("coins").textContent = fmt(S.coins);
-  $("cps").textContent = fmt(cps());
-  $("clickVal").textContent = fmt(clickValue());
   $("seeds").textContent = S.seeds;
   $("seedBonus").textContent = S.seeds * 5;
-  const wIdx = weatherCropIdx();
-  CROPS.forEach((c, i)=>{
-    const e = cropEls[c.id];
-    const n = buyN === "max" ? Math.max(1, maxAffordable(c)) : buyN;
-    const cost = bulkCost(c, n);
-    e.own.textContent = S.owned[c.id];
-    e.pcps.textContent = fmt(c.baseCps * cropMult(c.id) * globalMult());
-    e.badge.classList.toggle("hidden", i !== wIdx);
-    e.btn.querySelector("small").textContent = fmt(cost) + " 金币";
-    e.btn.firstChild.textContent = "买地 ×" + n + " ";
-    e.btn.disabled = buyN === "max" ? maxAffordable(c) < 1 : S.coins < cost;
+  const ar = autoRate();
+  $("autoRate").textContent = ar > 0 ? fmt(ar) + " /秒" : "手动模式";
+  CROPS.forEach(c=>{ seedEls[c.id].classList.toggle("sel", S.sel === c.id); });
+  for(let i=0; i<12; i++){
+    const e = plotEls[i], p = S.plots[i];
+    if(i >= S.unlocked){
+      e.root.classList.add("locked"); e.root.classList.remove("ripe");
+      e.tag.classList.remove("hidden");
+      e.tag.innerHTML = `🔒 开垦<br>${fmt(PLOT_COSTS[i])} 金币`;
+      e.bar.style.width = "0%";
+      if(e.stage !== -2){ drawSoil(e.cv.getContext("2d"), i + 1); e.stage = -2; }
+      continue;
+    }
+    e.root.classList.remove("locked");
+    const st = stageOf(p);
+    if(st !== e.stage || st === 4){ drawPlotCanvas(e.cv, i); e.stage = st; }
+    e.root.classList.toggle("ripe", st === 4);
+    e.tag.classList.toggle("hidden", st !== 4);
+    if(st === 4) e.tag.textContent = "✦ 可收获 ✦";
+    e.bar.style.width = (p.crop ? Math.min(100, progress(p) * 100) : 0) + "%";
+  }
+  AUTOS.forEach(a=>{
+    const lv = S.autos[a.id];
+    autoEls[a.id].lv.textContent = "Lv." + lv;
+    const cost = Math.floor(a.base * Math.pow(a.mult, lv));
+    const btn = autoEls[a.id].btn;
+    btn.querySelector("small").textContent = lv >= a.max ? "已满级" : fmt(cost) + " 金币";
+    btn.disabled = lv >= a.max || S.coins < cost;
   });
   let anyUp = false;
   UPGRADES.forEach(u=>{
@@ -290,82 +435,141 @@ function render(){
     if(visible){ anyUp = true; el.querySelector(".buyBtn").disabled = S.coins < u.cost; }
   });
   $("noUpgrades").style.display = anyUp ? "none" : "block";
+  const ripeCount = S.plots.slice(0, S.unlocked).filter(isRipe).length;
+  $("harvestAll").disabled = ripeCount === 0;
+  $("harvestAll").textContent = ripeCount > 0 ? `🧺 一键收获所有成熟作物（${ripeCount} 块）` : "🧺 一键收获所有成熟作物";
   const ps = pendingSeeds();
   $("pendingSeeds").textContent = ps;
   $("festBtn").disabled = ps < 1;
   $("festBtn").textContent = ps < 1 ? "开启丰收祭（本季收入达到 1M 后解锁）" : `开启丰收祭，换 ${ps} 颗金种子`;
   $("stats").innerHTML =
     `本季累计收入 <b>${fmt(S.stats.runEarned)}</b> · 历史总收入 <b>${fmt(S.stats.totalEarned)}</b><br>` +
-    `总采摘 <b>${S.stats.totalClicks}</b> 次 · 丰收祭 <b>${S.stats.fests}</b> 次 · 务农时长 <b>${fmtTime(S.stats.playSec)}</b>`;
+    `总点击 <b>${S.stats.totalClicks}</b> 次 · 总收获 <b>${S.stats.harvests}</b> 次 · 丰收祭 <b>${S.stats.fests}</b> 次 · 务农时长 <b>${fmtTime(S.stats.playSec)}</b>`;
 }
 
-/* ===== 操作 ===== */
-function buyCrop(c){
-  const n = buyN === "max" ? maxAffordable(c) : buyN;
-  if(n < 1) return;
-  const cost = bulkCost(c, n);
+/* ================= 操作 ================= */
+function floatText(x, y, txt){
+  const f = document.createElement("div");
+  f.className = "floatNum"; f.textContent = txt;
+  f.style.left = x + "px"; f.style.top = y + "px";
+  document.body.appendChild(f); setTimeout(()=>f.remove(), 1000);
+}
+function harvestPlot(i, x, y){
+  const p = S.plots[i];
+  if(!isRipe(p)) return 0;
+  const v = sellValue(p);
+  S.coins += v; S.stats.totalEarned += v; S.stats.runEarned += v; S.stats.harvests++;
+  p.crop = null; p.t0 = 0; p.bonus = 0;
+  plotEls[i].stage = -1;
+  if(x !== undefined) floatText(x - 16, y - 22, "+" + fmt(v));
+  return v;
+}
+function plotClick(i, ev){
+  const p = S.plots[i];
+  S.stats.totalClicks++;
+  const rect = plotEls[i].root.getBoundingClientRect();
+  const x = rect.left + rect.width / 2, y = rect.top + 10;
+  if(i >= S.unlocked){
+    const cost = PLOT_COSTS[i];
+    if(S.coins >= cost){ S.coins -= cost; S.unlocked++; toast(`🌻 新开垦一块地！现在共 ${S.unlocked} 块`); }
+    else toast(`金币不足，开垦需要 ${fmt(cost)}`);
+    render(); return;
+  }
+  if(!p.crop){
+    const c = CROP[S.sel];
+    if(S.coins < c.seed){ toast(`金币不足，${c.name}种子要 ${fmt(c.seed)}`); render(); return; }
+    S.coins -= c.seed; p.crop = c.id; p.t0 = Date.now(); p.bonus = 0;
+    plotEls[i].stage = -1;
+  } else if(isRipe(p)){
+    harvestPlot(i, x, y);
+  } else {
+    const add = S.upgrades.includes("can") ? 18 : 6;
+    p.bonus += CROP[p.crop].grow * add / 100;
+    floatText(x - 10, y - 18, "💧");
+    plotEls[i].stage = -1;
+  }
+  render();
+}
+function buyAuto(a){
+  const lv = S.autos[a.id];
+  if(lv >= a.max) return;
+  const cost = Math.floor(a.base * Math.pow(a.mult, lv));
   if(S.coins < cost) return;
-  S.coins -= cost; S.owned[c.id] += n; render();
+  S.coins -= cost; S.autos[a.id]++;
+  toast(`${a.name} 升级到 Lv.${S.autos[a.id]}`);
+  render();
 }
 function buyUpgrade(u){
   if(S.upgrades.includes(u.id) || S.coins < u.cost) return;
-  S.coins -= u.cost; S.upgrades.push(u.id); render();
-}
-const VEG = ["🥕","🥬","🍅","🌽","🎃","🍉","🍓","🌾","🌱","🥒"];
-$("plotBtn").addEventListener("click", e=>{
-  const v = clickValue();
-  S.coins += v; S.stats.totalEarned += v; S.stats.runEarned += v; S.stats.totalClicks++;
-  $("plotBtn").textContent = VEG[Math.floor(Math.random()*VEG.length)];
-  const f = document.createElement("div");
-  f.className = "floatNum"; f.textContent = "+" + fmt(v);
-  f.style.left = (e.clientX - 14 + (Math.random()*30-15)) + "px";
-  f.style.top = (e.clientY - 26) + "px";
-  document.body.appendChild(f); setTimeout(()=>f.remove(), 1000);
-  const g = document.createElement("div");
-  g.className = "floatVeg"; g.textContent = VEG[Math.floor(Math.random()*VEG.length)];
-  g.style.left = (e.clientX - 40 + (Math.random()*40-20)) + "px";
-  g.style.top = (e.clientY - 40) + "px";
-  document.body.appendChild(g); setTimeout(()=>g.remove(), 1100);
+  S.coins -= u.cost; S.upgrades.push(u.id);
+  for(let i=0; i<12; i++) plotEls[i].stage = -1;
   render();
-});
-$("buyModes").addEventListener("click", e=>{
-  const b = e.target.closest("button"); if(!b) return;
-  buyN = b.dataset.n === "max" ? "max" : parseInt(b.dataset.n, 10);
-  document.querySelectorAll("#buyModes button").forEach(x=>x.classList.toggle("on", x===b));
+}
+$("harvestAll").addEventListener("click", ()=>{
+  let n = 0, total = 0;
+  for(let i=0; i<S.unlocked; i++){ if(isRipe(S.plots[i])){ total += harvestPlot(i); n++; } }
+  if(n) toast(`🧺 收获 ${n} 块，共 +${fmt(total)} 金币`);
   render();
 });
 $("festBtn").addEventListener("click", ()=>{
   const ps = pendingSeeds();
   if(ps < 1) return;
-  if(!confirm(`确定开启丰收祭吗？将换得 ${ps} 颗金种子（永久 +${ps*5}% 产量），金币、菜园和技术会被清空，迎来新的一季。`)) return;
-  const keep = { seeds:S.seeds + ps, totalEarned:S.stats.totalEarned, totalClicks:S.stats.totalClicks, fests:S.stats.fests + 1, playSec:S.stats.playSec };
+  if(!confirm(`确定开启丰收祭吗？将换得 ${ps} 颗金种子（永久 +${ps*5}% 卖价），金币、田地、机器和技术会被清空，迎来新的一季。`)) return;
+  const keep = { seeds:S.seeds + ps, totalEarned:S.stats.totalEarned, totalClicks:S.stats.totalClicks, harvests:S.stats.harvests, fests:S.stats.fests + 1, playSec:S.stats.playSec };
   S = freshState();
-  S.seeds = keep.seeds;
+  S.seeds = keep.seeds; S.coins = 20;
   S.stats.totalEarned = keep.totalEarned; S.stats.totalClicks = keep.totalClicks;
-  S.stats.fests = keep.fests; S.stats.playSec = keep.playSec;
+  S.stats.harvests = keep.harvests; S.stats.fests = keep.fests; S.stats.playSec = keep.playSec;
+  for(let i=0; i<12; i++) plotEls[i].stage = -1;
   save(); render();
 });
 $("wipeBtn").addEventListener("click", ()=>{
-  if(!confirm("确定烧掉整个菜园重新种吗？存档会全部清空，不可恢复。")) return;
+  if(!confirm("确定烧掉整个农场重新种吗？存档会全部清空，不可恢复。")) return;
   localStorage.removeItem(SAVE_KEY);
-  S = freshState(); save(); render();
+  S = freshState();
+  for(let i=0; i<12; i++) plotEls[i].stage = -1;
+  save(); render();
 });
 $("offOk").addEventListener("click", ()=>{ $("modal").style.display = "none"; save(); });
 
-/* ===== 主循环 + 自动存档 ===== */
+/* ================= 自动化 + 主循环 ================= */
+function autoTick(){
+  let planted = S.autos.planter, harvested = S.autos.harvester;
+  if(harvested > 0){
+    for(let i=0; i<S.unlocked && harvested > 0; i++){
+      if(isRipe(S.plots[i])){ harvestPlot(i); harvested--; }
+    }
+  }
+  if(planted > 0){
+    const c = CROP[S.sel];
+    for(let i=0; i<S.unlocked && planted > 0; i++){
+      const p = S.plots[i];
+      if(!p.crop && S.coins >= c.seed){
+        S.coins -= c.seed; p.crop = c.id; p.t0 = Date.now(); p.bonus = 0;
+        plotEls[i].stage = -1; planted--;
+      }
+    }
+  }
+}
 buildUI();
 const off = load();
 render();
-if(off){ $("offTime").textContent = fmtTime(off.away); $("offGain").textContent = fmt(off.gain); $("modal").style.display = "flex"; }
-let last = performance.now();
+if(off){
+  $("offText").innerHTML = off.gain > 0
+    ? `你不在的 ${fmtTime(off.away)} 里，自动化农场一直在运转，卖出了`
+    : `你不在的 ${fmtTime(off.away)} 里，种下的作物都长好了，回来收吧（离线自动收入需要播种机+收割机）`;
+  $("offGain").textContent = fmt(off.gain);
+  $("modal").style.display = "flex";
+}
+let last = performance.now(), autoAcc = 0;
 setInterval(()=>{
   const now = performance.now();
   const dt = (now - last) / 1000; last = now;
-  const gain = cps() * dt;
-  if(gain > 0){ S.coins += gain; S.stats.totalEarned += gain; S.stats.runEarned += gain; }
   S.stats.playSec += dt;
+  autoAcc += dt;
+  if(autoAcc >= 1){ autoAcc -= 1; autoTick(); }
   render();
-}, 100);
+}, 200);
 setInterval(save, 5000);
 window.addEventListener("beforeunload", save);
 </script>
